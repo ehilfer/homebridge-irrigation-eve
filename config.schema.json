@@ -1,6 +1,6 @@
 {
-  "pluginAlias": "ExampleHomebridgePlugin",
-  "pluginType": "platform",
+  "pluginAlias": "Virtual Irrigation Eve",
+  "pluginType": "accessory",
   "singular": true,
   "schema": {
     "type": "object",
@@ -9,7 +9,13 @@
         "title": "Name",
         "type": "string",
         "required": true,
-        "default": "Example Dynamic Platform"
+        "default": "Virtual Irrigation System"
+      },
+      "httpPort": {
+        "title": "HTTP port",
+        "type": "number",
+        "required": false,
+        "default": "5678"
       }
     }
   }
