@@ -1,7 +1,7 @@
 {
   "displayName": "Irrigation System with Eve water consumption history",
   "name": "@petro-kushchak/homebridge-irrigation-eve",
-  "version": "1.0.1",
+  "version": "1.0.12",
   "description": "Irrigation System with Eve water consumption history",
   "license": "MIT",
   "repository": {

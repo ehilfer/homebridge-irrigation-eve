@@ -1,5 +1,5 @@
 {
-  "pluginAlias": "Virtual Irrigation Eve",
+  "pluginAlias": "VirtualIrrigationEve",
   "pluginType": "accessory",
   "singular": true,
   "schema": {
@@ -16,6 +16,12 @@
         "type": "number",
         "required": false,
         "default": "5678"
+      },
+      "zones": {
+        "title": "Amount of zones",
+        "type": "number",
+        "required": false,
+        "default": "1"
       }
     }
   }

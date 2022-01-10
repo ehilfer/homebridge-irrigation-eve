@@ -9,7 +9,8 @@
         {
             "accessory": "VirtualIrrigationEve",
             "name": "Virtual Irrigation System",
-            "httpPort": 5678
+            "httpPort": 5678,
+            "zones": 1
         }
     ]
 }
