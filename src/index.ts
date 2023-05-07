@@ -59,6 +59,9 @@ class VirtualIrrigationAccessory
   private currentHumidifierDehumidifierState: number;
   private waterLevel: number;
 
+  // teemperature
+  private currentTemperature: number;
+
   constructor(logger: Logging, config: AccessoryConfig, api: API) {
       super(api, config, logger);
       hap = api.hap;
@@ -72,6 +75,7 @@ class VirtualIrrigationAccessory
 
       this.fault = 0;
       this.currentRelativeHumidity = 50;
+      this.currentTemperature = 20;
       this.currentHumidifierDehumidifierState = hap.Characteristic.CurrentHumidifierDehumidifierState.INACTIVE;
       this.waterLevel = 20;
 
@@ -129,6 +133,14 @@ class VirtualIrrigationAccessory
       this.service
           .getCharacteristic(hap.Characteristic.waterLevel)
           .on('get', this.waterLevel.bind(this));
+
+      // Termperature service
+      this.service = new hap.Service.termperatureService(this.name);
+
+      this.service
+          .getCharacteristic(hap.Characteristic.currentTemperature)
+          .on('get', this.getCurrentTemperature.bind(this));
+
 
       // http service to receive status information
       this.httpService = new HttpService(this.httpPort, this.logger);
@@ -188,7 +200,12 @@ class VirtualIrrigationAccessory
 
   getCurrentRelativeHUmidity(callback: CharacteristicGetCallback) {
       this.logger.info('Triggered GET CurrentRelativeHUmidity ' + this.currentRelativeHumidity);
-      callback(null, this.fault);
+      callback(null, this.currentRelativeHumidity);
+  }
+
+  getCurrentTemperature(callback: CharacteristicGetCallback) {
+      this.logger.info('Triggered GET CurrentTemperature ' + this.currentTemperature);
+      callback(null, this.currentTemperature);
   }
 
   getCurrentHumidifierDehumidifierState(callback: CharacteristicGetCallback) {
@@ -254,7 +271,7 @@ class VirtualIrrigationAccessory
   }
 
   getServices(): Service[] {
-      return [this.serviceInfo, this.service, this.this.humidifierService, ...this.getEveServices()];
+      return [this.serviceInfo, this.service, this.humidifierService, this.termperatureService, ...this.getEveServices()];
   }
 
   protected getAccessory(): AccessoryPlugin {
