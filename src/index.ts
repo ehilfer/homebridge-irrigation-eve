@@ -47,10 +47,17 @@ class VirtualIrrigationAccessory
   private readonly humidifierService: Service;
   private readonly termperatureService: Service;
 
+  // irrigation
   private remainingDuration: number;
   private fault: number;
   private duration: number;
   private countdownTimer!: NodeJS.Timeout;
+  private duration: number;
+
+  // humidifier
+  private currentRelativeHumidity: number;
+  private currentHumidifierDehumidifierState: number;
+  private waterLevel: number;
 
   constructor(logger: Logging, config: AccessoryConfig, api: API) {
       super(api, config, logger);
@@ -62,6 +69,11 @@ class VirtualIrrigationAccessory
       this.httpPort = this.config.httpPort || 5678;
       this.remainingDuration = 0;
       this.duration = 3600;
+
+      this.fault = 0;
+      this.currentRelativeHumidity = 50;
+      this.currentHumidifierDehumidifierState = hap.Characteristic.CurrentHumidifierDehumidifierState.INACTIVE;
+      this.waterLevel = 20;
 
       // Set AccessoryInformation
       this.serviceInfo = new hap.Service.AccessoryInformation()
@@ -99,6 +111,26 @@ class VirtualIrrigationAccessory
 
       this.configureEveCharacteristics(this.service);
 
+      // Humidifier service to track the rainbarrel level as tank level
+      this.service = new hap.Service.humidifierService(this.name);
+
+      this.service
+          .getCharacteristic(hap.Characteristic.Active)
+          .on('set', this.setActiveHumidifier.bind(this));
+
+      this.service
+          .getCharacteristic(hap.Characteristic.currentRelativeHumidity)
+          .on('get', this.getCurrentRelativeHumidity.bind(this));
+
+      this.service
+          .getCharacteristic(hap.Characteristic.currentHumidifierDehumidifierState)
+          .on('get', this.getCurrentHumidifierDehumidifierState.bind(this));
+
+      this.service
+          .getCharacteristic(hap.Characteristic.waterLevel)
+          .on('get', this.waterLevel.bind(this));
+
+      // http service to receive status information
       this.httpService = new HttpService(this.httpPort, this.logger);
       this.httpService.start((fullPath: string) => this.httpHandler(fullPath));
   }
@@ -106,6 +138,15 @@ class VirtualIrrigationAccessory
   setDuration(value: CharacteristicValue, callback: CharacteristicSetCallback) {
       this.logger.info(`Triggered SET Duration: ${value}`);
       this.duration = Number.parseInt(value.toString());
+      callback();
+  }
+
+  setActiveHumidifier(
+      value: CharacteristicValue,
+      callback: CharacteristicSetCallback,
+  ) {
+      this.logger.info(`Triggered SET Active Humidifier: ${value}`);
+      this.humidifierService.getCharacteristic(hap.Characteristic.InUse).updateValue(value);
       callback();
   }
 
@@ -142,6 +183,21 @@ class VirtualIrrigationAccessory
 
   getFault(callback: CharacteristicGetCallback) {
       this.logger.info('Triggered GET Fault ' + this.fault);
+      callback(null, this.fault);
+  }
+
+  getCurrentRelativeHUmidity(callback: CharacteristicGetCallback) {
+      this.logger.info('Triggered GET CurrentRelativeHUmidity ' + this.currentRelativeHumidity);
+      callback(null, this.fault);
+  }
+
+  getCurrentHumidifierDehumidifierState(callback: CharacteristicGetCallback) {
+      this.logger.info('Triggered GET CurrentHumidifierDehumidifierState ' + this.currentHumidifierDehumidifierState);
+      callback(null, this.fault);
+  }
+
+  getCurrentWaterLevel(callback: CharacteristicGetCallback) {
+      this.logger.info('Triggered GET CurrentWaterLevel ' + this.waterLevel);
       callback(null, this.fault);
   }
 
@@ -198,7 +254,7 @@ class VirtualIrrigationAccessory
   }
 
   getServices(): Service[] {
-      return [this.serviceInfo, this.service, ...this.getEveServices()];
+      return [this.serviceInfo, this.service, this.this.humidifierService, ...this.getEveServices()];
   }
 
   protected getAccessory(): AccessoryPlugin {
