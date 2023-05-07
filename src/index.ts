@@ -44,7 +44,11 @@ class VirtualIrrigationAccessory
   private readonly maxDuration = 3600;
   private readonly httpService: HttpService;
 
+  private readonly humidifierService: Service;
+  private readonly termperatureService: Service;
+
   private remainingDuration: number;
+  private fault: number;
   private duration: number;
   private countdownTimer!: NodeJS.Timeout;
 
@@ -83,9 +87,15 @@ class VirtualIrrigationAccessory
           .on('get', this.zoneRemainingTime.bind(this));
 
       this.service
+          .getCharacteristic(hap.Characteristic.StatusFault)
+          .on('get', this.getFault.bind(this));
+
+      this.service
           .getCharacteristic(hap.Characteristic.SetDuration)
           .setProps({ maxValue: this.duration })
           .on('set', this.setDuration.bind(this));
+    
+      // TODO: add support for ProgramMode characteristic to indicate chedueld or manual operation
 
       this.configureEveCharacteristics(this.service);
 
@@ -128,6 +138,11 @@ class VirtualIrrigationAccessory
   zoneRemainingTime(callback: CharacteristicGetCallback) {
       this.logger.info('Triggered GET Remaining Time ' + this.remainingDuration);
       callback(null, this.remainingDuration);
+  }
+
+  getFault(callback: CharacteristicGetCallback) {
+      this.logger.info('Triggered GET Fault ' + this.fault);
+      callback(null, this.fault);
   }
 
   updateRemainingTime() {
