@@ -45,14 +45,13 @@ class VirtualIrrigationAccessory
   private readonly httpService: HttpService;
 
   private readonly humidifierService: Service;
-  private readonly termperatureService: Service;
+  private readonly temperatureService: Service;
 
   // irrigation
   private remainingDuration: number;
   private fault: number;
   private duration: number;
   private countdownTimer!: NodeJS.Timeout;
-  private duration: number;
 
   // humidifier
   private currentRelativeHumidity: number;
@@ -116,29 +115,29 @@ class VirtualIrrigationAccessory
       this.configureEveCharacteristics(this.service);
 
       // Humidifier service to track the rainbarrel level as tank level
-      this.service = new hap.Service.humidifierService(this.name);
+      this.service = new hap.Service.HumidifierDehumidifier(this.name);
 
       this.service
           .getCharacteristic(hap.Characteristic.Active)
           .on('set', this.setActiveHumidifier.bind(this));
 
       this.service
-          .getCharacteristic(hap.Characteristic.currentRelativeHumidity)
+          .getCharacteristic(hap.Characteristic.CurrentRelativeHumidity)
           .on('get', this.getCurrentRelativeHumidity.bind(this));
 
       this.service
-          .getCharacteristic(hap.Characteristic.currentHumidifierDehumidifierState)
+          .getCharacteristic(hap.Characteristic.CurrentHumidifierDehumidifierState)
           .on('get', this.getCurrentHumidifierDehumidifierState.bind(this));
 
       this.service
-          .getCharacteristic(hap.Characteristic.waterLevel)
-          .on('get', this.waterLevel.bind(this));
+          .getCharacteristic(hap.Characteristic.WaterLevel)
+          .on('get', this.getCurrentWaterLevel.bind(this));
 
-      // Termperature service
-      this.service = new hap.Service.termperatureService(this.name);
+      // Temperature service
+      this.service = new hap.Service.TemperatureSensor(this.name);
 
       this.service
-          .getCharacteristic(hap.Characteristic.currentTemperature)
+          .getCharacteristic(hap.Characteristic.CurrentTemperature)
           .on('get', this.getCurrentTemperature.bind(this));
 
 
@@ -198,7 +197,7 @@ class VirtualIrrigationAccessory
       callback(null, this.fault);
   }
 
-  getCurrentRelativeHUmidity(callback: CharacteristicGetCallback) {
+  getCurrentRelativeHumidity(callback: CharacteristicGetCallback) {
       this.logger.info('Triggered GET CurrentRelativeHUmidity ' + this.currentRelativeHumidity);
       callback(null, this.currentRelativeHumidity);
   }
@@ -271,7 +270,7 @@ class VirtualIrrigationAccessory
   }
 
   getServices(): Service[] {
-      return [this.serviceInfo, this.service, this.humidifierService, this.termperatureService, ...this.getEveServices()];
+      return [this.serviceInfo, this.service, this.humidifierService, this.temperatureService, ...this.getEveServices()];
   }
 
   protected getAccessory(): AccessoryPlugin {
